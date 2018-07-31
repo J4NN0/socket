@@ -58,8 +58,28 @@ int main(int argc, char *argv[])
         s2 = accept(s1, (struct sockaddr *) &caddr, &addrlen);
         fprintf(stdout, "Connection accepted %s:%d\n", inet_ntoa(caddr.sin_addr), ntohs(caddr.sin_port));
         
-        //request from client
+        memset(buffer, '\0', BUFFSIZE);
+        res = recv(s, buffer, BUFFSIZE, 0);
+        if(res==0){
+            fprintf(stdout, "Client close connection prematurely\n");    
+        }
+        else if(res>0){
+            fprintf(stdout, "Client sent %s\n", buffer);
+            memset(buffer, '\0', BUFFSIZE);
+            strcpy(buffer, "Hello from server");
+            if(send(s, buffer, strlen(buffer), 0)<0){
+                fprintf(stderr, "Send failed. Error: %d\n", errno);
+                close(s);
+                exit(EXIT_FAILURE);
+            }
+        }
+        else{
+            fprintf(stderr, "Recv failed. Error: %d\n", errno);
+            close(s);
+            exit(EXIT_FAILURE);
+        }
 
+        fprintf(stdout, "Closing connection...\n");
         if(close(s)!=0){
             fprintf(stderr, "Close failed. Error: %d\n", errno);
         }

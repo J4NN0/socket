@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 
 #define BKLOG 15 //backlog
+#define BUFFSIZE (255+1)
 
 static int nchild=0;
 
@@ -19,6 +20,7 @@ void wait_child(int nchild);
 int main(int argc, char *argv[])
 {
     int s1, s2;
+    char buffer[BUFFSIZE];
     short port;
     struct sockaddr_in saddr, caddr;
     socklen_t addrlen = sizeof(caddr);
@@ -70,13 +72,34 @@ int main(int argc, char *argv[])
             }
             fprintf(stdout, "Process generated. PID: %d\n", getpid());
             
-            //client request
+            memset(buffer, '\0', BUFFSIZE);
+            res = recv(s, buffer, BUFFSIZE, 0);
+            if(res==0){
+                fprintf(stdout, "Client close connection prematurely\n");    
+            }
+            else if(res>0){
+                fprintf(stdout, "Client sent %s\n", buffer);
+                memset(buffer, '\0', BUFFSIZE);
+                strcpy(buffer, "Hello from server");
+                if(send(s, buffer, strlen(buffer), 0)<0){
+                    fprintf(stderr, "Send failed. Error: %d\n", errno);
+                    close(s);
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else{
+                fprintf(stderr, "Recv failed. Error: %d\n", errno);
+                close(s);
+                exit(EXIT_FAILURE);
+            }
 
-            fprintf(stdout, "Closing connection...\n");
+            fprintf(stdout, "PID %d: Closing connection...\n", getpid());
             if(close(s2)!=0){
                 fprintf(stderr, "Close failed. Error: %d\n", errno);
                 exit(EXIT_FAILURE);
             }
+
+            exit(0);
         }
         else{ //father
             nchild++;

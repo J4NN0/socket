@@ -7,10 +7,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#define BUFFSIZE (255+1)
+
 int main(int argc, char *argv[])
 {
     short port;
-    int s, result;
+    int s;
+    char buffer[BUFFSIZE];
     struct sockaddr_in saddr;
     struct in_addr addr;
 
@@ -42,7 +45,24 @@ int main(int argc, char *argv[])
     else
         fprintf(stdout, "Connected...\n");
 
-    //request something to server
+    strcpy(buffer, "Hello world!");
+    fprintf(stdout, "Sending: %s\n", buffer);
+    if(send(s, buffer, strlen(buffer), 0)<=0){
+        fprintf(stderr, "Send failed. Message %s impossible to send. Error: %d\n", buffer, errno);
+        close(s);
+        exit(EXIT_FAILURE);
+    }
+
+    memset(buffer, '\0', BUFFSIZE);
+    fprintf(stdout, "Waiting for response...\n");
+    if(recv(s, buffer, BUFFSIZE, 0)>0){
+        fprintf(stdout, "Received: %s\n", buffer);
+    }
+    else{
+        fprintf(stderr, "Recv failed. Error: %d\n", errno);
+        close(s);
+        exit(EXIT_FAILURE);
+    }
 
     fprintf(stdout, "Closing connection...\n");
     if(close(s)!=0){
