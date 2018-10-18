@@ -4,6 +4,8 @@ A series of examples of TCP, UDP and XDR connections.
 # TCP
 An example with a client and server using TCP connections.
 
+The client connects to a server, send a message and terminate.
+
 # TCP select
 An example with a client and server using TCP connections in which client wait server response for a while.
 
@@ -21,6 +23,8 @@ Every time a connection is accepted a child process is generated and will satisf
 
 # UDP
 An example with a client and server using UDP connections.
+
+The client connects to a server, send a message and terminate.
 
 # XDR
 An example with a client and server using XDR protocol.
